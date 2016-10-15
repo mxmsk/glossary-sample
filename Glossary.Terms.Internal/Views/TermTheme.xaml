@@ -1,0 +1,21 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <SolidColorBrush x:Key="TermHeaderBackground"
+                     Color="#F79646"/>
+    <SolidColorBrush x:Key="TermHeaderForeground"
+                     Color="Black"/>
+
+    <SolidColorBrush x:Key="TermRowForeground"
+                     Color="Black"/>
+    <SolidColorBrush x:Key="TermRowBackground"
+                     Color="#FBCAA2"/>
+    <SolidColorBrush x:Key="TermRowAlternateBackground"
+                     Color="#FDE4D0"/>
+
+    <SolidColorBrush x:Key="TermRowSelectedForeground"
+                     Color="White"/>
+    <SolidColorBrush x:Key="TermRowSelectedBackground"
+                     Color="Red"/>
+
+</ResourceDictionary>

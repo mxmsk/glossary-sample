@@ -1,0 +1,231 @@
+﻿<UserControl x:Class="Glossary.Terms.Views.TermListView"
+             x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:terms="clr-namespace:Glossary.Terms;assembly=Glossary.Terms"
+             xmlns:local="clr-namespace:Glossary.Terms.Views">
+    <UserControl.Resources>        
+        <ResourceDictionary>
+            
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="TermTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <local:NegateBooleanConverter x:Key="NegateBoolConverter"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+            <Style TargetType="DataGridCell">
+                <Style.Triggers>
+                    <Trigger Property="IsSelected"
+                             Value="True">
+                        <Setter Property="Foreground"
+                                Value="{StaticResource TermRowSelectedForeground}"/>
+                        <Setter Property="Background"
+                                Value="{StaticResource TermRowSelectedBackground}"/>
+                        <Setter Property="BorderBrush"
+                                Value="{StaticResource TermRowSelectedBackground}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            
+            <Style x:Key="BusyIndicatorStyle"
+                   TargetType="ProgressBar">
+                <Setter Property="IsIndeterminate"
+                        Value="True"/>
+                <Setter Property="Height"
+                        Value="6"/>
+                <Setter Property="MaxWidth"
+                        Value="100"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsBusy}"
+                                 Value="False">
+                        <Setter Property="Visibility"
+                                Value="Hidden"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            
+            <Style x:Key="ColumnHeaderStyle"
+                   TargetType="Control">
+                <Setter Property="FontWeight"
+                        Value="Bold"/>
+                <Setter Property="Foreground"
+                        Value="{StaticResource TermHeaderForeground}"/>
+                <Setter Property="Background"
+                        Value="{StaticResource TermHeaderBackground}"/>
+            </Style>
+
+            <DataTemplate x:Key="EditTermColumnTemplate">
+                <Button Content="..."
+                        FontWeight="Bold"
+                        Command="{Binding Path=DataContext.EditTerm,RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        CommandParameter="{Binding}"
+                        VerticalAlignment="Center"
+                        Focusable="False"
+                        ClickMode="Press">
+                    <Button.ToolTip>
+                        <ToolTip>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock>
+                                    <Run Text="Edit term &quot;"/><Run Text="{Binding Path=Name,Mode=OneWay}"/><Run Text="&quot;"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </Button.ToolTip>
+                </Button>
+            </DataTemplate>
+        
+            <DataTemplate x:Key="TermDefinitionColumnTemplate">
+                <TextBlock Text="{Binding Definition}"
+                           TextWrapping="Wrap"/>
+            </DataTemplate>
+
+            <Style x:Key="TermEditElementStyle"
+                   TargetType="ContentControl">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsEditMode}"
+                                 Value="False">
+                        <Setter Property="Visibility"
+                                Value="Collapsed"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            
+            <Style x:Key="NotificationElementStyle"
+                   TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=Notification}"
+                                 Value="{x:Null}">
+                        <Setter Property="Visibility"
+                                Value="Collapsed"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="AddOrCancelButtonStyle"
+                   TargetType="Button">
+                <Setter Property="Content"
+                        Value="New Term"/>
+                <Setter Property="Command"
+                        Value="{Binding AddTerm}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsEditMode}"
+                                 Value="True">
+                        <Setter Property="Content"
+                                Value="Cancel"/>
+                        <Setter Property="Command"
+                                Value="{Binding Cancel}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+        </ResourceDictionary>
+    </UserControl.Resources>    
+    
+    <DockPanel UseLayoutRounding="True"
+               SnapsToDevicePixels="True">
+
+        <ContentControl Style="{StaticResource TermEditElementStyle}"
+                        Margin="0,0,0,8"
+                        DockPanel.Dock="Top">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Term:"/>
+                <TextBox Name="TermNameElement"
+                         Text="{Binding Path=EditViewModel.Name,UpdateSourceTrigger=PropertyChanged}"
+                         Grid.Column="2"/>
+                <TextBlock Text="Definition:"
+                           Grid.Row="2"/>
+                <TextBox Text="{Binding Path=EditViewModel.Definition,UpdateSourceTrigger=PropertyChanged}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True" 
+                         MaxHeight="150"
+                         VerticalScrollBarVisibility="Auto"
+                         Grid.Column="2"
+                         Grid.Row="2"/>
+            </Grid>
+        </ContentControl>
+
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="65"/>
+                <ColumnDefinition Width="65"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Delete Term"
+                    Command="{Binding DeleteTerm}"
+                    Visibility="{Binding Path=IsEnabled,RelativeSource={RelativeSource Self},Converter={StaticResource BoolToVisibilityConverter}}"
+                    HorizontalAlignment="Left"/>
+            <Button Content="OK"
+                    Command="{Binding Accept}"
+                    Visibility="{Binding Path=IsEnabled,RelativeSource={RelativeSource Self},Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,4,0"
+                    Grid.Column="1"/>
+            <Button Style="{StaticResource AddOrCancelButtonStyle}"
+                    Grid.Column="2"/>
+        </Grid>
+            
+        <ProgressBar Style="{StaticResource BusyIndicatorStyle}"
+                     DockPanel.Dock="Bottom"/>
+
+        <Border BorderThickness="1"
+                BorderBrush="#688CAF"
+                Background="PaleGoldenrod"
+                Style="{StaticResource NotificationElementStyle}"
+                Padding="4"
+                DockPanel.Dock="Bottom">
+            <DockPanel>
+                <Button Content="Create New Storage"
+                        Command="{Binding RecreateStorage}"
+                        VerticalAlignment="Center"
+                        Margin="8,0,0,0"
+                        Visibility="{Binding Path=IsEnabled,RelativeSource={RelativeSource Self},Converter={StaticResource BoolToVisibilityConverter}}"
+                        DockPanel.Dock="Right"/>
+                <TextBlock Text="{Binding Notification}"
+                           Foreground="Black"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <DataGrid Name="TermsDataGrid"
+                  ItemsSource="{Binding Terms}"
+                  Foreground="{StaticResource TermRowForeground}"
+                  RowBackground="{StaticResource TermRowBackground}"
+                  AlternatingRowBackground="{StaticResource TermRowAlternateBackground}"
+                  HorizontalGridLinesBrush="{StaticResource TermHeaderBackground}"
+                  VerticalGridLinesBrush="{StaticResource TermHeaderBackground}"
+                  ColumnHeaderStyle="{StaticResource ColumnHeaderStyle}"
+                  IsEnabled="{Binding Path=IsEditMode,Converter={StaticResource NegateBoolConverter}}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserReorderColumns="False"
+                  CanUserSortColumns="False"
+                  HeadersVisibility="Column"
+                  HorizontalScrollBarVisibility="Disabled"
+                  SelectionMode="Single"
+                  Margin="0,8">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Term"
+                                    Binding="{Binding Name}"/>
+                <DataGridTemplateColumn Header="Definition"
+                                        CellTemplate="{StaticResource TermDefinitionColumnTemplate}"
+                                        Width="*"/>
+                <DataGridTemplateColumn CellTemplate="{StaticResource EditTermColumnTemplate}"
+                                        CanUserResize="False"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+    
+</UserControl>
